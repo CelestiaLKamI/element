@@ -1,0 +1,40 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: postgres
+    restart: always
+    environment:
+      POSTGRES_DB: synapse
+      POSTGRES_USER: synapse
+      POSTGRES_PASSWORD: synapse
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data
+
+  synapse:
+    image: matrixdotorg/synapse:latest
+    container_name: synapse
+    restart: always
+    depends_on:
+      - postgres
+    environment:
+      SYNAPSE_SERVER_NAME: localhost
+      SYNAPSE_REPORT_STATS: "no"
+      POSTGRES_DB: synapse
+      POSTGRES_USER: synapse
+      POSTGRES_PASSWORD: synapse
+      POSTGRES_HOST: postgres
+    volumes:
+      - ./synapse_data:/data
+    ports:
+      - "8008:8008"
+
+  element:
+    image: vectorim/element-web:latest
+    container_name: element
+    restart: always
+    depends_on:
+      - synapse
+    volumes:
+      - ./element_config:/app/config
+    ports:
+      - "8080:80"
